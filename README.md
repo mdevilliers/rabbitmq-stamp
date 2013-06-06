@@ -49,6 +49,7 @@ Deploy
 ------
 
 Copy to your plugins directory in Rabbit
+
 Restart Rabbit
 
 
