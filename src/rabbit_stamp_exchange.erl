@@ -22,10 +22,9 @@ description() ->
 serialise_events() -> false.
 
 route(#exchange{name = XName}, Delivery) ->	
-  %(#exchange{name =#resource{name = XName}}
-	  rabbit_log:info("stamp:message routed: ~p!~n", [XName]),
+	%rabbit_log:info("stamp:message routed: ~p!~n", [XName]),
 	
-	  BasicMessage = (Delivery#delivery.message),
+	BasicMessage = (Delivery#delivery.message),
   	Content = (BasicMessage#basic_message.content),
   	Headers = rabbit_basic:extract_headers(Content),
   	[RoutingKey|_] = BasicMessage#basic_message.routing_keys,
@@ -45,7 +44,7 @@ route(#exchange{name = XName}, Delivery) ->
 	rabbit_basic:publish(NewDelivery),
 	[].
 
-% implementation
+% helpers
 extract_header(Headers, Key, Default) ->
    case lists:keyfind(Key, 1, Headers) of
         false ->
