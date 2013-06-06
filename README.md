@@ -52,6 +52,13 @@ Copy to your plugins directory in Rabbit
 
 Restart Rabbit
 
+FAQ
+---
 
+Tested with RabbitMQ 3.1.1
 
+Todo
+----
+
+Identifiers are not persisted on shutdown
 
