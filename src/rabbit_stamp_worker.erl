@@ -9,7 +9,6 @@
 -export([setup_schema/0]).
 -export([upsert_counter/2,find_counter/1]).
 
--include_lib("eunit/include/eunit.hrl").
 -include_lib("../include/rabbit_stamp.hrl").
 
 -rabbit_boot_step({rabbit_stamp_mnesia,
