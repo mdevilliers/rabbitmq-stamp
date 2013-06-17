@@ -50,6 +50,7 @@ Make the project
 
 ```
 cd rabbitmq-stamp
+export VERSION={VERSION NUMBER e.g 1.0.0} 
 make
 ```
 
