@@ -80,10 +80,11 @@ code_change(_, State, _) ->
 setup_schema() ->
   case mnesia:create_table(rabbit_stamp_state_offset,
           [{attributes, record_info(fields, rabbit_stamp_state_offset)},
-           {type, set}]) of
+           {type, set},
+           {disc_copies, [node()]}]) of 
       {atomic, ok} -> ok;
       {aborted, {already_exists, rabbit_stamp_state_offset}} -> ok
-  end.
+  end. 
 
 upsert_counter(Name, Count) ->
     F = fun() ->
