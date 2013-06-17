@@ -1,5 +1,4 @@
 -module(rabbit_stamp_supervisor).
-
 -behaviour(supervisor).
 
 -include_lib("amqp_client/include/amqp_client.hrl").
