@@ -26,29 +26,39 @@ can_handle_call_different_keys_test()->
 
 ok.
 
-will_pick_up_previous_value()->
+will_pick_up_previous_value_test()->
 
-    rabbit_stamp_worker:upsert_counter('offset-test-exchange', 5),   
+    rabbit_stamp_worker:upsert_counter('offset-test-exchange1', 5),   
 
-    State  = iterate_state(<<"offset-test-exchange">>, [], 1),
+    State  = iterate_state(<<"offset-test-exchange1">>, [], 1),
 
-    {CurrentValue1, _} = proplists:get_value('offset-test-exchange', State),
-
+    {CurrentValue1, _} = proplists:get_value('offset-test-exchange1', State),
     ?assert(CurrentValue1 =:= 6),
 
 ok.
 
+will_set_offset_to_count_offset_test() ->
+
+    iterate_state(<<"offset-test-exchange2">>, [], 1),  
+    {_,_, Offset} = rabbit_stamp_worker:find_counter('offset-test-exchange2'),
+    ?assert(Offset =:= ?COUNT_OFFSET),
+
+ok. 
+
 will_move_over_to_next_offset_test() ->
     
-    rabbit_stamp_worker:upsert_counter('offset-test-exchange', 1),
+    rabbit_stamp_worker:upsert_counter('offset-test-exchange3', 1),
 
     Iterations = ?COUNT_OFFSET + 10,
-    State  = iterate_state(<<"offset-test-exchange">>, [], Iterations),  
+    State  = iterate_state(<<"offset-test-exchange3">>, [], Iterations),  
 
-    {CurrentValue, Offset} = proplists:get_value('offset-test-exchange', State),
+    {CurrentValue, Offset} = proplists:get_value('offset-test-exchange3', State),
 
     ?assert(CurrentValue =:= (Iterations + 1)),
     ?assert(Offset =:= ?COUNT_OFFSET * 2),
+
+    {_,_, OffsetInDb} = rabbit_stamp_worker:find_counter('offset-test-exchange3'),
+    ?assert(OffsetInDb =:= ?COUNT_OFFSET * 2),
 ok.
 
 can_create_exchange_of_stamp_type_test()->

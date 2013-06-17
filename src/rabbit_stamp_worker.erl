@@ -7,7 +7,7 @@
          terminate/2, code_change/3]).
 
 -export([setup_schema/0]).
--export([upsert_counter/2]).
+-export([upsert_counter/2,find_counter/1]).
 
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("../include/rabbit_stamp.hrl").
@@ -82,7 +82,7 @@ setup_schema() ->
           [{attributes, record_info(fields, rabbit_stamp_state_offset)},
            {type, set}]) of
       {atomic, ok} -> ok;
-      {aborted, {already_exists, rabbit_stamp_offsets}} -> ok
+      {aborted, {already_exists, rabbit_stamp_state_offset}} -> ok
   end.
 
 upsert_counter(Name, Count) ->
