@@ -32,8 +32,11 @@ route(#exchange{name = XName}, Delivery) ->
   ToExchange = extract_header(Headers, <<"forward_exchange">>, XName),
   	
   Content1 = rabbit_basic:map_headers(fun(H)  -> 
-    	{ _R,N } = gen_server:call( global:whereis_name(rabbit_stamp_worker), {next, XName#resource.name}),
-		  lists:append( [{<<"stamp">>, long, N}], H)
+    case gen_server:call( global:whereis_name(rabbit_stamp_worker), {next, XName#resource.name}) of
+      { _R,N } ->
+        lists:append( [{<<"stamp">>, long, N}], H);
+      Else -> rabbit_log:info("rabbit_stamp_exchange : unknown error : ~p~n", [Else])
+    end
   end, Content), 
 
   {_Ok, Msg} = rabbit_basic:message({resource,<<"/">>, exchange, ToExchange}, RoutingKey, Content1),
