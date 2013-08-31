@@ -1,7 +1,8 @@
 -module(rabbit_stamp_worker).
 -behaviour(gen_server).
 
--export([start_link/0]).
+-export([start_link/0, next/1]).
+
 -export([setup_schema/0]).
 -export([upsert_counter/2,find_counter/1]).
 
@@ -27,14 +28,18 @@ start_link() ->
         Else -> Else
     end.
 
+next(<<ExchangeName/binary>>) ->
+    ExchangeName0 = list_to_atom( binary_to_list( ExchangeName ) ),
+    gen_server:call( find_worker() , {next, ExchangeName0});
+next(ExchangeName) when is_atom(ExchangeName) ->
+    gen_server:call( find_worker() , {next, ExchangeName}).
+
 init([]) ->
     {ok, []}.
 
-handle_call({_, ExchangeName}, _From , State) ->
+handle_call({next, ExchangeName}, _From , State) ->
 
-	Key = list_to_atom( binary_to_list( ExchangeName ) ),
-
-    case proplists:get_value(Key, State, unknown) of
+    case proplists:get_value(ExchangeName, State, unknown) of
         unknown -> 
             % i don't have it locally
             %case find_counter(Key) of
@@ -43,7 +48,7 @@ handle_call({_, ExchangeName}, _From , State) ->
             %        % so create it
             %        upsert_counter(Key, ?COUNT_OFFSET),
                     CurrentOffset = ?COUNT_OFFSET,
-                    CurrentCount = 0 ;
+                    CurrentCount = get_timestamp();
             %    {_,Key,CurrentCount} ->
             %        % i have it in mnesia
             %        % update the offset to be safe as this might be a restart
@@ -66,9 +71,9 @@ handle_call({_, ExchangeName}, _From , State) ->
             CurrentOffset0 = CurrentOffset
     end,
 
-	NewState0 = proplists:delete(Key, State),
+	NewState0 = proplists:delete(ExchangeName, State),
 
-    {reply, {ok,NextCount}, [{Key, {NextCount, CurrentOffset0}}| NewState0]}.
+    {reply, {ok,NextCount}, [{ExchangeName, {NextCount, CurrentOffset0}}| NewState0]}.
 
 handle_cast(_, State) ->
     {noreply, State}.
@@ -81,6 +86,14 @@ terminate(_, _State) ->
 
 code_change(_, State, _) ->
     {ok, State}.
+
+% helpers
+get_timestamp() ->
+    {Mega,Sec,Micro} = erlang:now(),
+    (Mega*1000000+Sec)*1000000+Micro.
+
+find_worker() ->
+    global:whereis_name(rabbit_stamp_worker).
 
 % mnesia set up
 setup_schema() ->
