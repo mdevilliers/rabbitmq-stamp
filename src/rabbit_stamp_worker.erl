@@ -20,9 +20,10 @@ start_link() ->
     rabbit_log:info("rabbit_stamp_worker : starting...~n"),
     case gen_server:start_link({global, ?MODULE}, ?MODULE, [], []) of
         {ok, Pid} -> 
+            rabbit_log:info("rabbit_stamp_worker : started locally on ~p~n", [node()]),
             {ok, Pid};
         {error, {already_started, Pid}} -> 
-            rabbit_log:info("rabbit_stamp_worker : Already started on ~p node ~p ~n", [Pid, node(Pid)]), 
+            rabbit_log:info("rabbit_stamp_worker : already started on ~p node ~p ~n", [Pid, node(Pid)]), 
             {ok, Pid};
         Else -> Else
     end.
