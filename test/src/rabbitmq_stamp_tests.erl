@@ -4,6 +4,19 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("amqp_client/include/amqp_client.hrl").
 
+can_expect_increasing_identifiers_test() ->
+    {ok, Result1} = rabbit_stamp_worker:next( <<"AAA">>),
+    {ok, Result2} = rabbit_stamp_worker:next( <<"AAA">>),
+    ?assert(Result2 > Result1),
+    ?assert(Result2 - Result1 =:= 1),
+    ok.
+
+can_expect_different_identifiers_for_more_than_one_exchange_test() ->
+    {ok, Result1} = rabbit_stamp_worker:next( <<"BBB">>),
+    {ok, Result2} = rabbit_stamp_worker:next( <<"CCC">>),
+    ?assert(Result2 > Result1),
+    ok.
+
 can_create_exchange_of_stamp_type_test()->
 
     Channel = get_connected_channel(),
@@ -19,13 +32,6 @@ get_connected_channel()->
 	{ok, Connection} = amqp_connection:start(#amqp_params_direct{}),
     {ok, Channel} = amqp_connection:open_channel(Connection),
     Channel.
-
-iterate_state(_, InitialState, 0) ->
-    InitialState;
-iterate_state(Name, InitialState, Count) ->
-    { _, _, NewState } = rabbit_stamp_worker:handle_call( { nothing, Name} , nothing, InitialState),
-    NewCount = Count - 1,
-    iterate_state(Name,NewState, NewCount).
 
 log(Message,Value) ->
     ?debugFmt("~p: ~p~n",[Message,Value]).
