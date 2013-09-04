@@ -41,7 +41,6 @@ route(#exchange{name = XName}, Delivery) ->
 	
   NewDelivery = build_delivery(Delivery, Msg),
 
-  %send message
 	rabbit_basic:publish(NewDelivery),
 	[].
 
@@ -60,7 +59,7 @@ build_delivery(Delivery, Message) ->
     NewDelivery = rabbit_basic:delivery(Mandatory, Message, MsgSeqNo),
     NewDelivery.
 
-% default callbacks - not implemented
+% default callbacks
 validate(_X) -> ok.
 create(_Tx, _X) -> ok.
 delete(_Tx, _X, _Bs) -> ok.

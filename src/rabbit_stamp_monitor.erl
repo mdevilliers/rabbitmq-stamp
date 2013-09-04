@@ -25,23 +25,6 @@ start_monitoring() ->
 			{ok,Pid}
 	end.
 
-%loop() ->
-%	receive
-%		{'EXIT', _Pid, normal} ->
-%			rabbit_log:info("rabbit_stamp_monitor : Pid: ~p stopped. Reason:normal~n", [_Pid]),
-%			start_monitoring();
-%		{'DOWN', _MonitorReference, process, SomePid, Reason} ->
-%			rabbit_log:info("rabbit_stamp_monitor : Pid: ~p down. Reason: ~p~n", [SomePid, Reason]),
-%			rabbit_log:info("rabbit_stamp_monitor : Attempting re-start on this node~n"),
-%			start_monitoring();
-%		Msg ->
-%			rabbit_log:info("rabbit_stamp_monitor : Unknown Message: ~p~n", [Msg]),
-%			loop()
-%end.
-
-is_local_pid(Pid) ->
-	node() =:= node(Pid).
-
 % gen_server
 init([]) ->
 	rabbit_log:info("rabbit_stamp_monitor : starting ~p~n", [self()]),
@@ -68,3 +51,7 @@ terminate(_, _State) ->
 
 code_change(_, State, _) ->
     {ok, State}.
+
+% helpers
+is_local_pid(Pid) ->
+	node() =:= node(Pid).
