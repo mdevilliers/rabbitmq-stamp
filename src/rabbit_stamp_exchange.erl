@@ -22,8 +22,7 @@ description() ->
 serialise_events() -> false.
 
 route(#exchange{name = XName}, Delivery) ->	
-	%rabbit_log:info("stamp:message routed: ~p!~n", [XName]),
-	
+
 	BasicMessage = (Delivery#delivery.message),
   Content = (BasicMessage#basic_message.content),
   Headers = rabbit_basic:extract_headers(Content),
@@ -34,8 +33,7 @@ route(#exchange{name = XName}, Delivery) ->
   Content1 = rabbit_basic:map_headers(fun(H)  -> 
     case rabbit_stamp_worker:next( XName#resource.name) of
       { ok,N } ->
-        lists:append( [{<<"stamp">>, long, N}], H);
-      Else -> rabbit_log:info("rabbit_stamp_exchange : unknown error : ~p~n", [Else])
+        lists:append( [{<<"stamp">>, long, N}], H)
     end
   end, Content), 
 
