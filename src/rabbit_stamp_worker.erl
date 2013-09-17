@@ -1,70 +1,60 @@
 -module(rabbit_stamp_worker).
 -behaviour(gen_server).
 
--export([start_link/0]).
+-export([start_link/0, next/2]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
--export([setup_schema/0]).
--export([upsert_counter/2,find_counter/1]).
-
--include_lib("../include/rabbit_stamp.hrl").
-
--rabbit_boot_step({rabbit_stamp_mnesia,
-  [{description, "rabbit stamp exchange type: mnesia"},
-    {mfa, {?MODULE, setup_schema, []}},
-    {requires, database},
-    {enables, external_infrastructure}]}).
+-include_lib("amqp_client/include/amqp_client.hrl").
 
 start_link() ->
-    gen_server:start_link({global, ?MODULE}, ?MODULE, [], []).
+    %rabbit_log:info("rabbit_stamp_worker : starting...~n"),
+    case gen_server:start_link({global, ?MODULE}, ?MODULE, [], []) of
+        {ok, Pid} -> 
+            %rabbit_log:info("rabbit_stamp_worker : started locally on ~p~n", [node()]),
+            {ok, Pid};
+        {error, {already_started, Pid}} -> 
+            %rabbit_log:info("rabbit_stamp_worker : already started on ~p node ~p ~n", [Pid, node(Pid)]), 
+            {ok, Pid};
+        Else -> Else
+    end.
+
+next(<<ExchangeName/binary>>, Message) ->
+    ExchangeName0 = list_to_atom( binary_to_list( ExchangeName ) ),
+    gen_server:cast( find_worker() , {next, ExchangeName0, Message});
+next(ExchangeName, Message) when is_atom(ExchangeName) ->
+    gen_server:cast( find_worker() , {next, ExchangeName, Message}).
 
 init([]) ->
     {ok, []}.
 
-handle_call({_, ExchangeName}, _From , State) ->
+handle_call(_, _ , State) ->
+      {reply, ok, State}.
 
-	Key = list_to_atom( binary_to_list( ExchangeName ) ),
+handle_cast({next, ExchangeName, Message}, State) ->
 
-    case proplists:get_value(Key, State, unknown) of
-        unknown -> 
-            % i don't have it locally
-            case find_counter(Key) of
-                [] ->
-                    % i don't have it in mnesia 
-                    % so create it
-                    upsert_counter(Key, ?COUNT_OFFSET),
-                    CurrentOffset = ?COUNT_OFFSET,
-                    CurrentCount = 0 ;
-                {_,Key,CurrentCount} ->
-                    % i have it in mnesia
-                    % update the offset to be safe as this might be a restart
-                    CurrentOffset = CurrentCount + ?COUNT_OFFSET,
-                    upsert_counter(Key, CurrentOffset)
-            end;
-        {LocalCount, LocalOffset} ->
-            %i have it locally
-            CurrentCount = LocalCount,
-            CurrentOffset = LocalOffset
-    end,
+    NextCount = get_next_number(ExchangeName, State),
+    
+    BasicMessage = (Message#delivery.message),
+    Content = (BasicMessage#basic_message.content),
+    Headers = rabbit_basic:extract_headers(Content),
+    [RoutingKey|_] = BasicMessage#basic_message.routing_keys,
 
-	NextCount = CurrentCount + 1,
+    ToExchange = extract_header(Headers, <<"forward_exchange">>, ExchangeName),
 
-    case NextCount =:= CurrentOffset of
-        true ->
-            CurrentOffset0 = CurrentCount + ?COUNT_OFFSET,
-            upsert_counter(Key, CurrentOffset0);
-        false ->
-            CurrentOffset0 = CurrentOffset
-    end,
+    Content1 = rabbit_basic:map_headers(fun(H)  ->   
+        lists:append( [{<<"stamp">>, long, NextCount}], H)
+    end, Content), 
 
-	NewState0 = proplists:delete(Key, State),
+    {_Ok, Msg} = rabbit_basic:message({resource,<<"/">>, exchange, ToExchange}, RoutingKey, Content1),
 
-    {reply, {ok,NextCount}, [{Key, {NextCount, CurrentOffset0}}| NewState0]}.
+    NewDelivery = build_delivery(Message, Msg),
 
-handle_cast(_, State) ->
-    {noreply, State}.
+    rabbit_basic:publish(NewDelivery),
+
+    NewState0 = proplists:delete(ExchangeName, State),
+    {noreply, [{ExchangeName, {NextCount}}| NewState0]}.
 
 handle_info(_, State) ->
     {noreply, State}.
@@ -75,33 +65,35 @@ terminate(_, _State) ->
 code_change(_, State, _) ->
     {ok, State}.
 
-% mnesia set up
-setup_schema() ->
-  case mnesia:create_table(rabbit_stamp_state_offset,
-          [{attributes, record_info(fields, rabbit_stamp_state_offset)},
-           {type, set},
-           {disc_copies, [node()]}]) of 
-      {atomic, ok} -> ok;
-      {aborted, {already_exists, rabbit_stamp_state_offset}} -> ok
-  end. 
-
-upsert_counter(Name, Count) ->
-    F = fun() ->
-         case mnesia:wread({rabbit_stamp_state_offset, Name}) of
-            [P] -> 
-                mnesia:write(P#rabbit_stamp_state_offset{high=Count});
-            []  -> 
-                mnesia:write(#rabbit_stamp_state_offset{exchangeName=Name, high=Count})
-        end
+% helpers
+get_next_number(ExchangeName, State) ->
+    case proplists:get_value(ExchangeName, State, unknown) of
+        unknown -> 
+            CurrentCount = get_timestamp();
+        {LocalCount} ->
+            CurrentCount = LocalCount
     end,
-    mnesia:activity(transaction,F).
 
-find_counter(Name) ->
-    F = fun() ->
-        mnesia:read({rabbit_stamp_state_offset, Name})
-    end,
-    case mnesia:transaction(F) of
-        {atomic,[Row]} -> Row ;
-        {atomic,[]} -> []
+    NextCount = CurrentCount + 1,
+    NextCount.
+
+extract_header(Headers, Key, Default) ->
+   case lists:keyfind(Key, 1, Headers) of
+        false ->
+            Default;
+        {_,_,Header} ->
+           Header
     end.
 
+build_delivery(Delivery, Message) ->
+    Mandatory = Delivery#delivery.mandatory,
+    MsgSeqNo = Delivery#delivery.msg_seq_no,
+    NewDelivery = rabbit_basic:delivery(Mandatory, Message, MsgSeqNo),
+    NewDelivery.
+
+get_timestamp() ->
+    {Mega,Sec,Micro} = erlang:now(),
+    (Mega*1000000+Sec)*1000000+Micro.
+
+find_worker() ->
+    global:whereis_name(rabbit_stamp_worker).

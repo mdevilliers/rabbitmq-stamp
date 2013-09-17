@@ -22,44 +22,11 @@ description() ->
 serialise_events() -> false.
 
 route(#exchange{name = XName}, Delivery) ->	
-	%rabbit_log:info("stamp:message routed: ~p!~n", [XName]),
-	
-	BasicMessage = (Delivery#delivery.message),
-  Content = (BasicMessage#basic_message.content),
-  Headers = rabbit_basic:extract_headers(Content),
-  [RoutingKey|_] = BasicMessage#basic_message.routing_keys,
 
-  ToExchange = extract_header(Headers, <<"forward_exchange">>, XName),
-  	
-  Content1 = rabbit_basic:map_headers(fun(H)  -> 
-    	{ _R,N } = gen_server:call( global:whereis_name(rabbit_stamp_worker), {next, XName#resource.name}),
-		  lists:append( [{<<"stamp">>, long, N}], H)
-  end, Content), 
-
-  {_Ok, Msg} = rabbit_basic:message({resource,<<"/">>, exchange, ToExchange}, RoutingKey, Content1),
-	
-  NewDelivery = build_delivery(Delivery, Msg),
-
-  %send message
-	rabbit_basic:publish(NewDelivery),
+  rabbit_stamp_worker:nextx( XName#resource.name, Delivery),
 	[].
 
-% helpers
-extract_header(Headers, Key, Default) ->
-   case lists:keyfind(Key, 1, Headers) of
-        false ->
-            Default;
-        {_,_,Header} ->
-           Header
-    end.
-
-build_delivery(Delivery, Message) ->
-    Mandatory = Delivery#delivery.mandatory,
-    MsgSeqNo = Delivery#delivery.msg_seq_no,
-    NewDelivery = rabbit_basic:delivery(Mandatory, Message, MsgSeqNo),
-    NewDelivery.
-
-% default callbacks - not implemented
+% default callbacks
 validate(_X) -> ok.
 create(_Tx, _X) -> ok.
 delete(_Tx, _X, _Bs) -> ok.
