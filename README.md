@@ -19,16 +19,16 @@ The forwarded message will contain the header
 stamp {some number}
 ```
 
-Persistance
+Identifiers
 -----------
 
 Each exchange of type "x-stamp" will maintain their own incrementing identifier.
 
-For each exchange we keep in a disk persistant mnesia table a "high watermark".
+For each exchange we keep an in memory-identifier.
 
-On restart the the next identifier will resume from the watermark.
+On restart the the next identifier will resume from the current timestamp.
 
-The trade off of the algorithm is that we minimise mnesia traffic and the identifiers always increase. The downsise is that there might be gaps in the identifiers given. 
+The trade off of the algorithm is that identifiers always increase. The downside is that there might be gaps in the identifiers. 
 
 Build
 -----
@@ -64,4 +64,4 @@ Restart Rabbit
 FAQ
 ---
 
-Tested with RabbitMQ 3.1.1
+Tested with RabbitMQ 3.*.*
