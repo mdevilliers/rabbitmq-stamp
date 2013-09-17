@@ -27,7 +27,7 @@ start_monitoring() ->
 
 % gen_server
 init([]) ->
-	rabbit_log:info("rabbit_stamp_monitor : starting ~p~n", [self()]),
+	%rabbit_log:info("rabbit_stamp_monitor : starting ~p~n", [self()]),
 	start_monitoring(),
 	{ok, []}.
 
@@ -38,12 +38,12 @@ handle_cast(_, State) ->
     {noreply, State}.
 
 handle_info({'DOWN', _MonitorReference, process, SomePid, Reason}, State) ->
-	rabbit_log:info("rabbit_stamp_monitor : Pid: ~p DOWN. Reason: ~p~n", [SomePid, Reason]),
-	rabbit_log:info("rabbit_stamp_monitor : Attempting re-start on this node~n"),
+	%rabbit_log:info("rabbit_stamp_monitor : Pid: ~p DOWN. Reason: ~p~n", [SomePid, Reason]),
+	%rabbit_log:info("rabbit_stamp_monitor : Attempting re-start on this node~n"),
 	start_monitoring(),
 	{noreply, State};
 handle_info(_Info, State) ->
-	rabbit_log:info("rabbit_stamp_monitor : Info: ~p~n", [_Info]),
+	%rabbit_log:info("rabbit_stamp_monitor : Info: ~p~n", [_Info]),
     {noreply, State}.
 
 terminate(_, _State) ->
