@@ -5,12 +5,6 @@
 
 -export([start_link/0, init/1]).
 
-%-rabbit_boot_step({?MODULE,
-%  [{description, "stamp"},
-% 		{mfa,{ rabbit_sup, start_child, [?MODULE]}},
-%                    {requires, kernel_ready},
-%                    {enables, core_initialized }]}).
-
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, _Arg = []).
 

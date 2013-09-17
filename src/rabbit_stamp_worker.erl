@@ -1,49 +1,60 @@
 -module(rabbit_stamp_worker).
 -behaviour(gen_server).
 
--export([start_link/0, next/1]).
+-export([start_link/0, next/2]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
+-include_lib("amqp_client/include/amqp_client.hrl").
+
 start_link() ->
-    rabbit_log:info("rabbit_stamp_worker : starting...~n"),
+    %rabbit_log:info("rabbit_stamp_worker : starting...~n"),
     case gen_server:start_link({global, ?MODULE}, ?MODULE, [], []) of
         {ok, Pid} -> 
-            rabbit_log:info("rabbit_stamp_worker : started locally on ~p~n", [node()]),
+            %rabbit_log:info("rabbit_stamp_worker : started locally on ~p~n", [node()]),
             {ok, Pid};
         {error, {already_started, Pid}} -> 
-            rabbit_log:info("rabbit_stamp_worker : already started on ~p node ~p ~n", [Pid, node(Pid)]), 
+            %rabbit_log:info("rabbit_stamp_worker : already started on ~p node ~p ~n", [Pid, node(Pid)]), 
             {ok, Pid};
         Else -> Else
     end.
 
-next(<<ExchangeName/binary>>) ->
+next(<<ExchangeName/binary>>, Message) ->
     ExchangeName0 = list_to_atom( binary_to_list( ExchangeName ) ),
-    gen_server:call( find_worker() , {next, ExchangeName0});
-next(ExchangeName) when is_atom(ExchangeName) ->
-    gen_server:call( find_worker() , {next, ExchangeName}).
+    gen_server:cast( find_worker() , {next, ExchangeName0, Message});
+next(ExchangeName, Message) when is_atom(ExchangeName) ->
+    gen_server:cast( find_worker() , {next, ExchangeName, Message}).
 
 init([]) ->
     {ok, []}.
 
-handle_call({next, ExchangeName}, _From , State) ->
+handle_call(_, _ , State) ->
+      {reply, ok, State}.
 
-    case proplists:get_value(ExchangeName, State, unknown) of
-        unknown -> 
-            CurrentCount = get_timestamp();
-        {LocalCount} ->
-            CurrentCount = LocalCount
-    end,
+handle_cast({next, ExchangeName, Message}, State) ->
 
-	NextCount = CurrentCount + 1,
+    NextCount = get_next_number(ExchangeName, State),
+    
+    BasicMessage = (Message#delivery.message),
+    Content = (BasicMessage#basic_message.content),
+    Headers = rabbit_basic:extract_headers(Content),
+    [RoutingKey|_] = BasicMessage#basic_message.routing_keys,
 
-	NewState0 = proplists:delete(ExchangeName, State),
+    ToExchange = extract_header(Headers, <<"forward_exchange">>, ExchangeName),
 
-    {reply, {ok,NextCount}, [{ExchangeName, {NextCount}}| NewState0]}.
+    Content1 = rabbit_basic:map_headers(fun(H)  ->   
+        lists:append( [{<<"stamp">>, long, NextCount}], H)
+    end, Content), 
 
-handle_cast(_, State) ->
-    {noreply, State}.
+    {_Ok, Msg} = rabbit_basic:message({resource,<<"/">>, exchange, ToExchange}, RoutingKey, Content1),
+
+    NewDelivery = build_delivery(Message, Msg),
+
+    rabbit_basic:publish(NewDelivery),
+
+    NewState0 = proplists:delete(ExchangeName, State),
+    {noreply, [{ExchangeName, {NextCount}}| NewState0]}.
 
 handle_info(_, State) ->
     {noreply, State}.
@@ -55,6 +66,31 @@ code_change(_, State, _) ->
     {ok, State}.
 
 % helpers
+get_next_number(ExchangeName, State) ->
+    case proplists:get_value(ExchangeName, State, unknown) of
+        unknown -> 
+            CurrentCount = get_timestamp();
+        {LocalCount} ->
+            CurrentCount = LocalCount
+    end,
+
+    NextCount = CurrentCount + 1,
+    NextCount.
+
+extract_header(Headers, Key, Default) ->
+   case lists:keyfind(Key, 1, Headers) of
+        false ->
+            Default;
+        {_,_,Header} ->
+           Header
+    end.
+
+build_delivery(Delivery, Message) ->
+    Mandatory = Delivery#delivery.mandatory,
+    MsgSeqNo = Delivery#delivery.msg_seq_no,
+    NewDelivery = rabbit_basic:delivery(Mandatory, Message, MsgSeqNo),
+    NewDelivery.
+
 get_timestamp() ->
     {Mega,Sec,Micro} = erlang:now(),
     (Mega*1000000+Sec)*1000000+Micro.
