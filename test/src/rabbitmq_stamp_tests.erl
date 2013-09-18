@@ -5,15 +5,15 @@
 -include_lib("amqp_client/include/amqp_client.hrl").
 
 can_expect_increasing_identifiers_test() ->
-    {ok, Result1} = rabbit_stamp_worker:next( <<"AAA">>),
-    {ok, Result2} = rabbit_stamp_worker:next( <<"AAA">>),
+    {ok, Result1, State0} = rabbit_stamp_worker:get_next_number( <<"AAA">>, []),
+    {ok, Result2, _} = rabbit_stamp_worker:get_next_number( <<"AAA">>, State0),
     ?assert(Result2 > Result1),
     ?assert(Result2 - Result1 =:= 1),
     ok.
 
 can_expect_different_identifiers_for_more_than_one_exchange_test() ->
-    {ok, Result1} = rabbit_stamp_worker:next( <<"BBB">>),
-    {ok, Result2} = rabbit_stamp_worker:next( <<"CCC">>),
+    {ok, Result1, State0} = rabbit_stamp_worker:get_next_number( <<"BBB">>, []),
+    {ok, Result2, _} = rabbit_stamp_worker:get_next_number( <<"CCC">>, State0),
     ?assert(Result2 > Result1),
     ok.
 
