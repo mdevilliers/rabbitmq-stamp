@@ -2,6 +2,7 @@
 -behaviour(gen_server).
 
 -export([start_link/0, next/2]).
+-export([get_next_number/2]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
@@ -34,7 +35,7 @@ handle_call(_, _ , State) ->
 
 handle_cast({next, ExchangeName, Message}, State) ->
 
-    NextCount = get_next_number(ExchangeName, State),
+    {ok, NextCount, NewState} = get_next_number(ExchangeName, State),
     
     BasicMessage = (Message#delivery.message),
     Content = (BasicMessage#basic_message.content),
@@ -52,9 +53,7 @@ handle_cast({next, ExchangeName, Message}, State) ->
     NewDelivery = build_delivery(Message, Msg),
 
     rabbit_basic:publish(NewDelivery),
-
-    NewState0 = proplists:delete(ExchangeName, State),
-    {noreply, [{ExchangeName, {NextCount}}| NewState0]}.
+    {noreply, NewState}.
 
 handle_info(_, State) ->
     {noreply, State}.
@@ -75,7 +74,8 @@ get_next_number(ExchangeName, State) ->
     end,
 
     NextCount = CurrentCount + 1,
-    NextCount.
+    NewState0 = proplists:delete(ExchangeName, State),
+    {ok, NextCount, [{ExchangeName, {NextCount}}| NewState0]}.
 
 extract_header(Headers, Key, Default) ->
    case lists:keyfind(Key, 1, Headers) of
