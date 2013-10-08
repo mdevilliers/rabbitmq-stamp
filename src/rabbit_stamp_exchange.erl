@@ -22,8 +22,7 @@ description() ->
 serialise_events() -> false.
 
 route(#exchange{name = XName}, Delivery) ->	
-
-  rabbit_stamp_worker:next( XName#resource.name, Delivery),
+  rabbit_stamp_worker:next( XName#resource.name, XName#resource.virtual_host , Delivery),
 	[].
 
 % default callbacks

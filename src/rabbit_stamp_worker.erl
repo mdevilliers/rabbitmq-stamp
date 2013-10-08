@@ -1,7 +1,7 @@
 -module(rabbit_stamp_worker).
 -behaviour(gen_server).
 
--export([start_link/0, next/2]).
+-export([start_link/0, next/3]).
 -export([get_next_number/2]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -21,11 +21,11 @@ start_link() ->
         Else -> Else
     end.
 
-next(<<ExchangeName/binary>>, Message) ->
+next(<<ExchangeName/binary>>, VirtualHost, Message) ->
     ExchangeName0 = list_to_atom( binary_to_list( ExchangeName ) ),
-    gen_server:cast( find_worker() , {next, ExchangeName0, Message});
-next(ExchangeName, Message) when is_atom(ExchangeName) ->
-    gen_server:cast( find_worker() , {next, ExchangeName, Message}).
+    gen_server:cast( find_worker() , {next, ExchangeName0, VirtualHost, Message});
+next(ExchangeName, VirtualHost, Message) when is_atom(ExchangeName) ->
+    gen_server:cast( find_worker() , {next, ExchangeName, VirtualHost, Message}).
 
 init([]) ->
     {ok, []}.
@@ -33,7 +33,7 @@ init([]) ->
 handle_call(_, _ , State) ->
       {reply, ok, State}.
 
-handle_cast({next, ExchangeName, Message}, State) ->
+handle_cast({next, ExchangeName, VirtualHost, Message}, State) ->
 
     {ok, NextCount, NewState} = get_next_number(ExchangeName, State),
     
@@ -48,7 +48,7 @@ handle_cast({next, ExchangeName, Message}, State) ->
         lists:append( [{<<"stamp">>, long, NextCount}], H)
     end, Content), 
 
-    {_Ok, Msg} = rabbit_basic:message({resource,<<"/">>, exchange, ToExchange}, RoutingKey, Content1),
+    {ok, Msg} = rabbit_basic:message({resource, VirtualHost, exchange, ToExchange}, RoutingKey, Content1),
 
     NewDelivery = build_delivery(Message, Msg),
 
