@@ -37,7 +37,7 @@ handle_call(_, _ , State) ->
 handle_cast(_, State) ->
     {noreply, State}.
 
-handle_info({'DOWN', _MonitorReference, process, SomePid, Reason}, State) ->
+handle_info({'DOWN', _MonitorReference, process, _SomePid, _Reason}, State) ->
 	%rabbit_log:info("rabbit_stamp_monitor : Pid: ~p DOWN. Reason: ~p~n", [SomePid, Reason]),
 	%rabbit_log:info("rabbit_stamp_monitor : Attempting re-start on this node~n"),
 	start_monitoring(),
