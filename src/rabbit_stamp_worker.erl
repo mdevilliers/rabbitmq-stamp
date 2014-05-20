@@ -37,8 +37,8 @@ handle_cast({next, ExchangeName, VirtualHost, Message}, State) ->
 
     {ok, NextCount, NewState} = get_next_number(ExchangeName, State),
     
-    BasicMessage = (Message#delivery.message),
-    Content = (BasicMessage#basic_message.content),
+    BasicMessage = Message#delivery.message,
+    Content = BasicMessage#basic_message.content,
     Headers = rabbit_basic:extract_headers(Content),
     [RoutingKey|_] = BasicMessage#basic_message.routing_keys,
 
@@ -51,7 +51,6 @@ handle_cast({next, ExchangeName, VirtualHost, Message}, State) ->
     {ok, Msg} = rabbit_basic:message({resource, VirtualHost, exchange, ToExchange}, RoutingKey, Content1),
 
     NewDelivery = build_delivery(Message, Msg),
-
     rabbit_basic:publish(NewDelivery),
     {noreply, NewState}.
 
@@ -88,8 +87,8 @@ extract_header(Headers, Key, Default) ->
 build_delivery(Delivery, Message) ->
     Mandatory = Delivery#delivery.mandatory,
     MsgSeqNo = Delivery#delivery.msg_seq_no,
-    NewDelivery = rabbit_basic:delivery(Mandatory, Message, MsgSeqNo),
-    NewDelivery.
+    DoConfirm = Delivery#delivery.confirm,
+    rabbit_basic:delivery(Mandatory, DoConfirm, Message, MsgSeqNo).
 
 get_timestamp() ->
     {Mega,Sec,Micro} = erlang:now(),
