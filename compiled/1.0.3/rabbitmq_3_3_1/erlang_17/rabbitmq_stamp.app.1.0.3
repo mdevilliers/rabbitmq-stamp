@@ -1,0 +1,9 @@
+{application,rabbitmq_stamp_exchange,
+             [{description,"RabbitMQ Exchange to provide unique incrementing identifiers for messages sent to it."},
+              {vsn,"1.0.3"},
+              {modules,[rabbit_stamp,rabbit_stamp_exchange,
+                        rabbit_stamp_monitor,rabbit_stamp_supervisor,
+                        rabbit_stamp_worker]},
+              {registered,[]},
+              {mod,{rabbit_stamp,[]}},
+              {applications,[kernel,stdlib,rabbit]}]}.
