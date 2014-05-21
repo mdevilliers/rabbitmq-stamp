@@ -33,6 +33,15 @@ init([]) ->
 handle_call(_, _ , State) ->
       {reply, ok, State}.
 
+% not too sure what to do with manadatory recieved message confirmations
+% as we have broken the link to the original sender to maintain consistancy 
+% when running in ha mode
+% Not requried at the moment but definatly a todo...
+handle_cast({mandatory_received,_}, State) ->
+    {noreply, State};
+handle_cast( {confirm,_,_},State) ->
+    {noreply, State};
+    
 handle_cast({next, ExchangeName, VirtualHost, Message}, State) ->
 
     {ok, NextCount, NewState} = get_next_number(ExchangeName, State),
