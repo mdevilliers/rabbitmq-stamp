@@ -4,7 +4,7 @@ PROJECT_MOD = rabbit_stamp
 
 define PROJECT_ENV
 [
-	    {exchange, <<"metronome">>}
+	    {exchange, <<"rabbitmq_stamp">>}
 	  ]
 endef
 
