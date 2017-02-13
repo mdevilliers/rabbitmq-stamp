@@ -2,7 +2,6 @@
 -behaviour(gen_server).
 
 -export([start_link/0, next/3]).
--export([get_next_number/2]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
@@ -44,8 +43,8 @@ handle_cast( {confirm,_,_},State) ->
     
 handle_cast({next, ExchangeName, VirtualHost, Message}, State) ->
 
-    {ok, NextCount, NewState} = get_next_number(ExchangeName, State),
-    
+    NextCount = erlang:unique_integer([positive, monotonic]),
+
     BasicMessage = Message#delivery.message,
     Content = BasicMessage#basic_message.content,
     Headers = rabbit_basic:extract_headers(Content),
@@ -61,7 +60,7 @@ handle_cast({next, ExchangeName, VirtualHost, Message}, State) ->
 
     NewDelivery = build_delivery(Message, Msg),
     rabbit_basic:publish(NewDelivery),
-    {noreply, NewState}.
+    {noreply, State}.
 
 handle_info(_, State) ->
     {noreply, State}.
@@ -73,18 +72,6 @@ code_change(_, State, _) ->
     {ok, State}.
 
 % helpers
-get_next_number(ExchangeName, State) ->
-    case proplists:get_value(ExchangeName, State, unknown) of
-        unknown -> 
-            CurrentCount = get_timestamp();
-        {LocalCount} ->
-            CurrentCount = LocalCount
-    end,
-
-    NextCount = CurrentCount + 1,
-    NewState0 = proplists:delete(ExchangeName, State),
-    {ok, NextCount, [{ExchangeName, {NextCount}}| NewState0]}.
-
 extract_header(Headers, Key, Default) ->
    case lists:keyfind(Key, 1, Headers) of
         false ->
@@ -98,10 +85,6 @@ build_delivery(Delivery, Message) ->
     MsgSeqNo = Delivery#delivery.msg_seq_no,
     DoConfirm = Delivery#delivery.confirm,
     rabbit_basic:delivery(Mandatory, DoConfirm, Message, MsgSeqNo).
-
-get_timestamp() ->
-    {Mega,Sec,Micro} = erlang:now(),
-    (Mega*1000000+Sec)*1000000+Micro.
 
 find_worker() ->
     global:whereis_name(rabbit_stamp_worker).

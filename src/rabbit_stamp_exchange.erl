@@ -5,6 +5,7 @@
 -export([description/0, serialise_events/0, route/2]).
 -export([validate/1, create/2, delete/3, add_binding/3,
          remove_bindings/3, assert_args_equivalence/2,policy_changed/2,validate_binding/2 ]).
+-export([info/1, info/2]).
 
 -rabbit_boot_step({?MODULE,
   [{description, "stamp exchange type: registry"},
@@ -35,3 +36,7 @@ assert_args_equivalence(X, Args) ->
   rabbit_exchange:assert_args_equivalence(X, Args).
 policy_changed(_A,_B) -> ok.
 validate_binding(_A,_B) -> ok.
+
+info(_X) -> [].
+info(_X,_) -> [].
+

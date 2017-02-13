@@ -4,20 +4,6 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("amqp_client/include/amqp_client.hrl").
 
-can_expect_increasing_identifiers_test() ->
-    {ok, Result1, State0} = rabbit_stamp_worker:get_next_number( <<"AAA">>, []),
-    {ok, Result2, _} = rabbit_stamp_worker:get_next_number( <<"AAA">>, State0),
-    ?assert(Result2 > Result1),
-    ?assert(Result2 - Result1 =:= 1),
-    ok.
-
-can_expect_different_identifiers_for_more_than_one_exchange_test() ->
-    {ok, Result1, State0} = rabbit_stamp_worker:get_next_number( <<"BBB">>, []),
-    {ok, Result2, _} = rabbit_stamp_worker:get_next_number( <<"CCC">>, State0),
-    ?assert(Result2 > Result1),
-    ok.
-
-
 can_send_a_message_to_stamp_exchange_test() ->
 
     Channel = get_connected_channel(),
@@ -56,10 +42,10 @@ can_send_a_message_to_stamp_exchange_test() ->
          #'basic.consume_ok'{} -> ok
     end,
 
-    loop(Channel,RecievingXChangeName),
+    loop(RecievingXChangeName),
     ok.
 
-loop(Channel, DestExchange) ->
+loop( DestExchange) ->
 
     receive
         {#'basic.deliver'{},  #amqp_msg{props = Props}} ->
@@ -84,7 +70,8 @@ can_create_exchange_of_stamp_type_test()->
 
 % private
 get_connected_channel()->
-	{ok, Connection} = amqp_connection:start(#amqp_params_direct{}),
+    {ok, Connection} = amqp_connection:start(#amqp_params_direct{	
+    }),
     {ok, Channel} = amqp_connection:open_channel(Connection),
     Channel.
 
