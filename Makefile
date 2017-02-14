@@ -9,6 +9,10 @@ define PROJECT_ENV
 endef
 
 DEPS = rabbit_common rabbit amqp_client
+dep_rabbit_common_commit = rabbitmq_v3_6_6
+dep_rabbit_commit = rabbitmq_v3_6_6
+dep_amqp_client_commit = rabbitmq_v3_6_6
+
 TEST_DEPS = rabbitmq_ct_helpers rabbitmq_ct_client_helpers
 
 DEP_PLUGINS = rabbit_common/mk/rabbitmq-plugin.mk
