@@ -15,7 +15,7 @@ start_link() ->
             %rabbit_log:info("rabbit_stamp_worker : started locally on ~p~n", [node()]),
             {ok, Pid};
         {error, {already_started, Pid}} -> 
-            %rabbit_log:info("rabbit_stamp_worker : already started on ~p node ~p ~n", [Pid, node(Pid)]), 
+            %rabbit_log:info("rabbit_stamp_worker : already started on ~p node ~p ~n", [Pid, node(Pid)]),
             {ok, Pid};
         Else -> Else
     end.
@@ -52,7 +52,7 @@ handle_cast({next, ExchangeName, VirtualHost, Message}, State) ->
 
     ToExchange = extract_header(Headers, <<"forward_exchange">>, ExchangeName),
 
-    Content1 = rabbit_basic:map_headers(fun(H)  ->   
+    Content1 = rabbit_basic:map_headers(fun(H)  ->
         lists:append( [{<<"stamp">>, long, NextCount}], H)
     end, Content), 
 
