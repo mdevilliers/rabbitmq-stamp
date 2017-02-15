@@ -8,10 +8,10 @@ define PROJECT_ENV
 	  ]
 endef
 
+# sets the current version of rabbit rather than working of master
+current_rmq_ref = rabbitmq_v3_6_3
+
 DEPS = rabbit_common rabbit amqp_client
-dep_rabbit_common_commit = rabbitmq_v3_6_6
-dep_rabbit_commit = rabbitmq_v3_6_6
-dep_amqp_client_commit = rabbitmq_v3_6_6
 
 TEST_DEPS = rabbitmq_ct_helpers rabbitmq_ct_client_helpers
 
@@ -24,4 +24,5 @@ ERLANG_MK_REPO = https://github.com/rabbitmq/erlang.mk.git
 ERLANG_MK_COMMIT = rabbitmq-tmp
 
 include rabbitmq-components.mk
+
 include erlang.mk
