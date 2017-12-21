@@ -1,26 +1,58 @@
-
--module(rabbitmq_stamp_tests).
+-module(stamp_SUITE).
 
 -include_lib("eunit/include/eunit.hrl").
+-include_lib("common_test/include/ct.hrl").
 -include_lib("amqp_client/include/amqp_client.hrl").
 
-can_expect_increasing_identifiers_test() ->
-    {ok, Result1, State0} = rabbit_stamp_worker:get_next_number( <<"AAA">>, []),
-    {ok, Result2, _} = rabbit_stamp_worker:get_next_number( <<"AAA">>, State0),
-    ?assert(Result2 > Result1),
-    ?assert(Result2 - Result1 =:= 1),
-    ok.
+-compile(export_all).
 
-can_expect_different_identifiers_for_more_than_one_exchange_test() ->
-    {ok, Result1, State0} = rabbit_stamp_worker:get_next_number( <<"BBB">>, []),
-    {ok, Result2, _} = rabbit_stamp_worker:get_next_number( <<"CCC">>, State0),
-    ?assert(Result2 > Result1),
-    ok.
+all() ->
+    [
+      {group, non_parallel_tests}
+    ].
+
+groups() ->
+    [
+        {non_parallel_tests, [], [
+            can_send_a_message_to_stamp_exchange_test,
+            can_create_exchange_of_stamp_type_test
+        ]}
+    ].
+
+%% -------------------------------------------------------------------
+%% Testsuite setup/teardown.
+%% -------------------------------------------------------------------
+
+init_per_suite(Config) ->
+    rabbit_ct_helpers:log_environment(),
+    Config1 = rabbit_ct_helpers:set_config(Config, [
+                                                    {rmq_nodename_suffix, ?MODULE}
+                                                   ]),
+    rabbit_ct_helpers:run_setup_steps(Config1,
+                                      rabbit_ct_broker_helpers:setup_steps() ++
+                                      rabbit_ct_client_helpers:setup_steps()).
+
+end_per_suite(Config) ->
+    rabbit_ct_helpers:run_teardown_steps(Config,
+                                         rabbit_ct_client_helpers:teardown_steps() ++
+                                         rabbit_ct_broker_helpers:teardown_steps()).
+
+init_per_group(_, Config) -> Config.
+
+end_per_group(_, Config) -> Config.
+
+init_per_testcase(Testcase, Config) ->
+    rabbit_ct_helpers:testcase_started(Config, Testcase).
+
+end_per_testcase(Testcase, Config) ->
+    rabbit_ct_helpers:testcase_finished(Config, Testcase).
+suite() ->
+    [{timetrap, {seconds, 60}}].
 
 
-can_send_a_message_to_stamp_exchange_test() ->
+can_send_a_message_to_stamp_exchange_test(Config) ->
 
-    Channel = get_connected_channel(),
+    Channel = rabbit_ct_client_helpers:open_channel(Config),
     SendingXChangeName = <<"demo-exchange">>,
     RecievingXChangeName = <<"mydestinationexchange">>,
 
@@ -51,15 +83,15 @@ can_send_a_message_to_stamp_exchange_test() ->
     Message = #amqp_msg{props = Props, payload = Payload},
 
     ok = amqp_channel:cast(Channel, Publish, Message),
-    
+
     receive
          #'basic.consume_ok'{} -> ok
     end,
 
-    loop(Channel,RecievingXChangeName),
+    loop(RecievingXChangeName),
     ok.
 
-loop(Channel, DestExchange) ->
+loop( DestExchange) ->
 
     receive
         {#'basic.deliver'{},  #amqp_msg{props = Props}} ->
@@ -72,21 +104,16 @@ loop(Channel, DestExchange) ->
         1000 ->  ?assert( false )
     end.
 
-can_create_exchange_of_stamp_type_test()->
+can_create_exchange_of_stamp_type_test(Config)->
 
-    Channel = get_connected_channel(),
+    Channel =  rabbit_ct_client_helpers:open_channel(Config),
     XChangeName = <<"demo-exchange">>,
-    
+
     ExchangeDeclare = #'exchange.declare'{exchange = XChangeName , type = <<"x-stamp">>},
     #'exchange.declare_ok'{} = amqp_channel:call(Channel, ExchangeDeclare),
 
 	ok.
 
 % private
-get_connected_channel()->
-	{ok, Connection} = amqp_connection:start(#amqp_params_direct{}),
-    {ok, Channel} = amqp_connection:open_channel(Connection),
-    Channel.
-
 log(Message,Value) ->
     ?debugFmt("~p: ~p~n",[Message,Value]).
