@@ -17,6 +17,8 @@ TEST_DEPS = rabbitmq_ct_helpers rabbitmq_ct_client_helpers
 
 DEP_PLUGINS = rabbit_common/mk/rabbitmq-plugin.mk
 
+BUILD_DEPS+= ranch
+
 # FIXME: Use erlang.mk patched for RabbitMQ, while waiting for PRs to be
 # reviewed and merged.
 
