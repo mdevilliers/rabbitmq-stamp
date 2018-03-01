@@ -25,5 +25,4 @@ before_script:
     git fetch upstream master:master || :
 
 script:
-  - make build
   - make tests
