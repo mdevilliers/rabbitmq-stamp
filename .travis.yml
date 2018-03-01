@@ -7,6 +7,10 @@ otp_release:
   - "19.3"
   - "20.1"
 
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y zip xsltproc xmlto
+
 before_script:
   # The checkout made by Travis is a "detached HEAD" and branches
   # information is missing. Our Erlang.mk's git_rmq fetch method relies
