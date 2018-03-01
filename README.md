@@ -28,7 +28,7 @@ For each exchange we keep an in memory-identifier.
 
 On restart the the next identifier will resume from the current timestamp.
 
-The trade off of the algorithm is that identifiers always increase. The downside is that there might be gaps in the identifiers. 
+The trade off of the algorithm is that identifiers always increase. The downside is that there might be gaps in the identifiers.
 
 Build
 -----
@@ -43,23 +43,23 @@ Run the tests
 
 ```
 cd rabbitmq-stamp
-make test
+make tests
 ```
 
 Make the project
 
 ```
-cd rabbitmq-stamp
-export VERSION={VERSION NUMBER e.g 1.0.0} 
 make
 ```
 
-Deploy
-------
+Create distrubution
 
-Copy to your plugins directory in Rabbit
+```
+# sets the current version of rabbit rather than working of master
+current_rmq_ref = rabbitmq_v3_7_0
 
-Restart Rabbit
+make dist
+```
 
 FAQ
 ---
