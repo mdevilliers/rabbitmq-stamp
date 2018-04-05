@@ -9,7 +9,7 @@ define PROJECT_ENV
 endef
 
 # sets the current version of rabbit rather than working of master
-current_rmq_ref = rabbitmq_v3_7_3
+current_rmq_ref = v3.7.4
 
 DEPS = rabbit_common rabbit amqp_client
 
