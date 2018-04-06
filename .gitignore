@@ -1,0 +1,7 @@
+/cover
+/deps
+/ebin
+/logs
+/plugins
+/.erlang.mk
+rabbitmq_stamp.d
