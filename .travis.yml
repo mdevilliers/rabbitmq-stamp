@@ -26,5 +26,7 @@ before_script:
     git fetch upstream stable:stable || :
     git fetch upstream master:master || :
 
+install: true
+
 script:
   - make tests
