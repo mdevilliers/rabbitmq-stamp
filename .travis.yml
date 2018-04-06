@@ -1,7 +1,9 @@
 # vim:sw=2:et:
 
 sudo: false
-language: erlang
+
+# elixir needed for the build
+language: elixir
 
 otp_release:
   - "19.3"
