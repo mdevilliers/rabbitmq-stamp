@@ -16,13 +16,13 @@ PROJECT_VERSION := $(RABBITMQ_VERSION)
 ifeq ($(PROJECT_VERSION),)
 PROJECT_VERSION := $(shell \
 if test -f git-revisions.txt; then \
-  head -n1 git-revisions.txt | \
-  awk '{print $$$(words $(PROJECT_DESCRIPTION) version);}'; \
+	head -n1 git-revisions.txt | \
+	awk '{print $$$(words $(PROJECT_DESCRIPTION) version);}'; \
 else \
-  (git describe --dirty --abbrev=7 --tags --always --first-parent \
-   2>/dev/null || echo rabbitmq_v0_0_0) | \
-  sed -e 's/^rabbitmq_v//' -e 's/^v//' -e 's/_/./g' -e 's/-/+/' \
-   -e 's/-/./g'; \
+	(git describe --dirty --abbrev=7 --tags --always --first-parent \
+	 2>/dev/null || echo rabbitmq_v0_0_0) | \
+	sed -e 's/^rabbitmq_v//' -e 's/^v//' -e 's/_/./g' -e 's/-/+/' \
+	 -e 's/-/./g'; \
 fi)
 endif
 
@@ -111,79 +111,79 @@ dep_rabbitmq_public_umbrella          = git_rmq rabbitmq-public-umbrella $(curre
 # all projects use the same versions. It avoids conflicts and makes it
 # possible to work with rabbitmq-public-umbrella.
 
-dep_cowboy = hex 2.2.2
-dep_cowlib = hex 2.1.0
-dep_jsx = hex 2.8.2
-dep_lager = hex 3.5.1
-dep_ranch = hex 1.4.0
-dep_ranch_proxy_protocol = hex 1.4.4
-dep_recon = hex 2.3.2
+dep_cowboy = hex 2.3.0
+dep_cowlib = hex 2.2.1
+dep_jsx = hex 2.9.0
+dep_lager = hex 3.6.1
+dep_ranch = hex 1.5.0
+dep_ranch_proxy_protocol = hex 1.5.0
+dep_recon = hex 2.3.4
 
 dep_sockjs = git https://github.com/rabbitmq/sockjs-erlang.git 405990ea62353d98d36dbf5e1e64942d9b0a1daf
 
 RABBITMQ_COMPONENTS = amqp_client \
-          amqp10_common \
-          amqp10_client \
-          ra \
-          rabbit \
-          rabbit_common \
-          rabbitmq_amqp1_0 \
-          rabbitmq_auth_backend_amqp \
-          rabbitmq_auth_backend_cache \
-          rabbitmq_auth_backend_http \
-          rabbitmq_auth_backend_ldap \
-          rabbitmq_auth_mechanism_ssl \
-          rabbitmq_aws \
-          rabbitmq_boot_steps_visualiser \
-          rabbitmq_clusterer \
-          rabbitmq_cli \
-          rabbitmq_codegen \
-          rabbitmq_consistent_hash_exchange \
-          rabbitmq_ct_client_helpers \
-          rabbitmq_ct_helpers \
-          rabbitmq_delayed_message_exchange \
-          rabbitmq_dotnet_client \
-          rabbitmq_event_exchange \
-          rabbitmq_federation \
-          rabbitmq_federation_management \
-          rabbitmq_java_client \
-          rabbitmq_jms_client \
-          rabbitmq_jms_cts \
-          rabbitmq_jms_topic_exchange \
-          rabbitmq_lvc_exchange \
-          rabbitmq_management \
-          rabbitmq_management_agent \
-          rabbitmq_management_exchange \
-          rabbitmq_management_themes \
-          rabbitmq_management_visualiser \
-          rabbitmq_message_timestamp \
-          rabbitmq_metronome \
-          rabbitmq_mqtt \
-          rabbitmq_objc_client \
-          rabbitmq_peer_discovery_aws \
-          rabbitmq_peer_discovery_common \
-          rabbitmq_peer_discovery_consul \
-          rabbitmq_peer_discovery_etcd \
-          rabbitmq_peer_discovery_k8s \
-          rabbitmq_random_exchange \
-          rabbitmq_recent_history_exchange \
-          rabbitmq_routing_node_stamp \
-          rabbitmq_rtopic_exchange \
-          rabbitmq_server_release \
-          rabbitmq_sharding \
-          rabbitmq_shovel \
-          rabbitmq_shovel_management \
-          rabbitmq_stomp \
-          rabbitmq_toke \
-          rabbitmq_top \
-          rabbitmq_tracing \
-          rabbitmq_trust_store \
-          rabbitmq_web_dispatch \
-          rabbitmq_web_mqtt \
-          rabbitmq_web_mqtt_examples \
-          rabbitmq_web_stomp \
-          rabbitmq_web_stomp_examples \
-          rabbitmq_website
+		      amqp10_common \
+		      amqp10_client \
+		      ra \
+		      rabbit \
+		      rabbit_common \
+		      rabbitmq_amqp1_0 \
+		      rabbitmq_auth_backend_amqp \
+		      rabbitmq_auth_backend_cache \
+		      rabbitmq_auth_backend_http \
+		      rabbitmq_auth_backend_ldap \
+		      rabbitmq_auth_mechanism_ssl \
+		      rabbitmq_aws \
+		      rabbitmq_boot_steps_visualiser \
+		      rabbitmq_clusterer \
+		      rabbitmq_cli \
+		      rabbitmq_codegen \
+		      rabbitmq_consistent_hash_exchange \
+		      rabbitmq_ct_client_helpers \
+		      rabbitmq_ct_helpers \
+		      rabbitmq_delayed_message_exchange \
+		      rabbitmq_dotnet_client \
+		      rabbitmq_event_exchange \
+		      rabbitmq_federation \
+		      rabbitmq_federation_management \
+		      rabbitmq_java_client \
+		      rabbitmq_jms_client \
+		      rabbitmq_jms_cts \
+		      rabbitmq_jms_topic_exchange \
+		      rabbitmq_lvc_exchange \
+		      rabbitmq_management \
+		      rabbitmq_management_agent \
+		      rabbitmq_management_exchange \
+		      rabbitmq_management_themes \
+		      rabbitmq_management_visualiser \
+		      rabbitmq_message_timestamp \
+		      rabbitmq_metronome \
+		      rabbitmq_mqtt \
+		      rabbitmq_objc_client \
+		      rabbitmq_peer_discovery_aws \
+		      rabbitmq_peer_discovery_common \
+		      rabbitmq_peer_discovery_consul \
+		      rabbitmq_peer_discovery_etcd \
+		      rabbitmq_peer_discovery_k8s \
+		      rabbitmq_random_exchange \
+		      rabbitmq_recent_history_exchange \
+		      rabbitmq_routing_node_stamp \
+		      rabbitmq_rtopic_exchange \
+		      rabbitmq_server_release \
+		      rabbitmq_sharding \
+		      rabbitmq_shovel \
+		      rabbitmq_shovel_management \
+		      rabbitmq_stomp \
+		      rabbitmq_toke \
+		      rabbitmq_top \
+		      rabbitmq_tracing \
+		      rabbitmq_trust_store \
+		      rabbitmq_web_dispatch \
+		      rabbitmq_web_mqtt \
+		      rabbitmq_web_mqtt_examples \
+		      rabbitmq_web_stomp \
+		      rabbitmq_web_stomp_examples \
+		      rabbitmq_website
 
 # Several components have a custom erlang.mk/build.config, mainly
 # to disable eunit. Therefore, we can't use the top-level project's
@@ -193,8 +193,8 @@ NO_AUTOPATCH += $(RABBITMQ_COMPONENTS)
 ifeq ($(origin current_rmq_ref),undefined)
 ifneq ($(wildcard .git),)
 current_rmq_ref := $(shell (\
-  ref=$$(LANG=C git branch --list | awk '/^\* \(.*detached / {ref=$$0; sub(/.*detached [^ ]+ /, "", ref); sub(/\)$$/, "", ref); print ref; exit;} /^\* / {ref=$$0; sub(/^\* /, "", ref); print ref; exit}');\
-  if test "$$(git rev-parse --short HEAD)" != "$$ref"; then echo "$$ref"; fi))
+	ref=$$(LANG=C git branch --list | awk '/^\* \(.*detached / {ref=$$0; sub(/.*detached [^ ]+ /, "", ref); sub(/\)$$/, "", ref); print ref; exit;} /^\* / {ref=$$0; sub(/^\* /, "", ref); print ref; exit}');\
+	if test "$$(git rev-parse --short HEAD)" != "$$ref"; then echo "$$ref"; fi))
 else
 current_rmq_ref := master
 endif
@@ -208,11 +208,11 @@ ifeq ($(possible_base_rmq_ref),$(current_rmq_ref))
 base_rmq_ref := $(current_rmq_ref)
 else
 base_rmq_ref := $(shell \
-  (git rev-parse --verify -q master >/dev/null && \
-   git rev-parse --verify -q $(possible_base_rmq_ref) >/dev/null && \
-   git merge-base --is-ancestor $$(git merge-base master HEAD) $(possible_base_rmq_ref) && \
-   echo $(possible_base_rmq_ref)) || \
-  echo master)
+	(git rev-parse --verify -q master >/dev/null && \
+	 git rev-parse --verify -q $(possible_base_rmq_ref) >/dev/null && \
+	 git merge-base --is-ancestor $$(git merge-base master HEAD) $(possible_base_rmq_ref) && \
+	 echo $(possible_base_rmq_ref)) || \
+	echo master)
 endif
 else
 base_rmq_ref := master
@@ -267,29 +267,29 @@ subst_repo_name = $(patsubst %/$(1)/%,%/$(2)/%,$(patsubst %/$(1),%/$(2),$(patsub
 # single-quoted string.
 dep_rmq_repo = $(if $(dep_$(2)),$(call subst_repo_name,$(PROJECT),$(2),$(call subst_repo_name,$(RABBITMQ_COMPONENT_REPO_NAME),$(call rmq_cmp_repo_name,$(2)),$(1))),$(pkg_$(1)_repo))
 
-dep_rmq_commits = $(if $(dep_$(1)),         \
-      $(wordlist 3,$(words $(dep_$(1))),$(dep_$(1))), \
-      $(pkg_$(1)_commit))
+dep_rmq_commits = $(if $(dep_$(1)),					\
+		  $(wordlist 3,$(words $(dep_$(1))),$(dep_$(1))),	\
+		  $(pkg_$(1)_commit))
 
 define dep_fetch_git_rmq
-  fetch_url1='$(call dep_rmq_repo,$(RABBITMQ_CURRENT_FETCH_URL),$(1))'; \
-  fetch_url2='$(call dep_rmq_repo,$(RABBITMQ_UPSTREAM_FETCH_URL),$(1))'; \
-  if test "$$$$fetch_url1" != '$(RABBITMQ_CURRENT_FETCH_URL)' && \
-   git clone -q -n -- "$$$$fetch_url1" $(DEPS_DIR)/$(call dep_name,$(1)); then \
-      fetch_url="$$$$fetch_url1"; \
-      push_url='$(call dep_rmq_repo,$(RABBITMQ_CURRENT_PUSH_URL),$(1))'; \
-  elif git clone -q -n -- "$$$$fetch_url2" $(DEPS_DIR)/$(call dep_name,$(1)); then \
-      fetch_url="$$$$fetch_url2"; \
-      push_url='$(call dep_rmq_repo,$(RABBITMQ_UPSTREAM_PUSH_URL),$(1))'; \
-  fi; \
-  cd $(DEPS_DIR)/$(call dep_name,$(1)) && ( \
-  $(foreach ref,$(call dep_rmq_commits,$(1)), \
-    git checkout -q $(ref) >/dev/null 2>&1 || \
-    ) \
-  (echo "error: no valid pathspec among: $(call dep_rmq_commits,$(1))" \
-    1>&2 && false) ) && \
-  (test "$$$$fetch_url" = "$$$$push_url" || \
-   git remote set-url --push origin "$$$$push_url")
+	fetch_url1='$(call dep_rmq_repo,$(RABBITMQ_CURRENT_FETCH_URL),$(1))'; \
+	fetch_url2='$(call dep_rmq_repo,$(RABBITMQ_UPSTREAM_FETCH_URL),$(1))'; \
+	if test "$$$$fetch_url1" != '$(RABBITMQ_CURRENT_FETCH_URL)' && \
+	 git clone -q -n -- "$$$$fetch_url1" $(DEPS_DIR)/$(call dep_name,$(1)); then \
+	    fetch_url="$$$$fetch_url1"; \
+	    push_url='$(call dep_rmq_repo,$(RABBITMQ_CURRENT_PUSH_URL),$(1))'; \
+	elif git clone -q -n -- "$$$$fetch_url2" $(DEPS_DIR)/$(call dep_name,$(1)); then \
+	    fetch_url="$$$$fetch_url2"; \
+	    push_url='$(call dep_rmq_repo,$(RABBITMQ_UPSTREAM_PUSH_URL),$(1))'; \
+	fi; \
+	cd $(DEPS_DIR)/$(call dep_name,$(1)) && ( \
+	$(foreach ref,$(call dep_rmq_commits,$(1)), \
+	  git checkout -q $(ref) >/dev/null 2>&1 || \
+	  ) \
+	(echo "error: no valid pathspec among: $(call dep_rmq_commits,$(1))" \
+	  1>&2 && false) ) && \
+	(test "$$$$fetch_url" = "$$$$push_url" || \
+	 git remote set-url --push origin "$$$$push_url")
 endef
 
 # --------------------------------------------------------------------
@@ -297,10 +297,10 @@ endef
 # --------------------------------------------------------------------
 
 list-dist-deps::
-  @:
+	@:
 
 prepare-dist::
-  @:
+	@:
 
 # --------------------------------------------------------------------
 # Umbrella-specific settings.
