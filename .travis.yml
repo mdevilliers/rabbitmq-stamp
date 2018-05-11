@@ -51,4 +51,5 @@ before_script:
     elixir --version | grep -q 'Elixir 1.6.0'
 script:
   - make tests
+  - make dist
 
