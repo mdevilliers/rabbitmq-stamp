@@ -37,7 +37,7 @@ before_script:
   # information is missing. Our Erlang.mk's git_rmq fetch method relies
   # on it, so we need to restore it.
   #
-  # We simply fetch master and, if it exists, v3.8.x branches. A branch
+  # We fetch master and, if it exists, v3.7.x branches. A branch
   # is created, pointing to the detached HEAD.
   - |
     git checkout -B "${TRAVIS_TAG:-${TRAVIS_BRANCH}}"
@@ -49,6 +49,13 @@ before_script:
     echo YES | kiex implode
     elixir --version
     elixir --version | grep -q 'Elixir 1.6.0'
+  - |
+  # Download ghr to upload compiled packages to github
+    GHR_RELEASE='v0.10.0'
+    curl -L -O https://github.com/tcnksm/ghr/releases/download/${GHR_RELEASE}/ghr_${GHR_RELEASE}_linux_amd64.zip
+    unzip ghr_${GHR_RELEASE}_linux_amd64.zip
+    rm ghr_${GHR_RELEASE}_linux_amd64.zip
+    mv ghr /usr/local/bin
 script:
   - make tests
   - make dist

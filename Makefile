@@ -2,15 +2,18 @@ PROJECT = rabbitmq_stamp
 PROJECT_DESCRIPTION = RabbitMQ Exchange to provide unique incrementing identifiers for messages sent to it.
 PROJECT_MOD = rabbit_stamp
 
+VERSION_TO_BUILD=3.7.4
+
 define PROJECT_ENV
 [
-	    {exchange, <<"rabbitmq_stamp">>}
-	  ]
+	    {exchange, <<"rabbitmq_stamp">>},
+		{vsn, $(VERSION_TO_BUILD)}
+]
 endef
 
 # sets the current version of rabbit rather than working of master
 # remeber to set the version in the rabbitmq_stamp.app.src file
-current_rmq_ref = v3.7.4
+current_rmq_ref = v$(VERSION_TO_BUILD)
 
 DEPS = rabbit_common rabbit amqp_client
 

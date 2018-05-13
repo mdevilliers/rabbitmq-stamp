@@ -1,5 +1,6 @@
 {application, rabbitmq_stamp,
  [{description, "RabbitMQ Exchange to provide unique incrementing identifiers for messages sent to it."},
+  {vsn, "1.0"},
   {modules, []},
   {registered, []},
   {mod, {rabbit_stamp, []}},
