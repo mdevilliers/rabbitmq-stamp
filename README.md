@@ -7,10 +7,10 @@ The exchange "stamps" the message header with the identifier then forward the me
 
 The exchange type is "x-stamp".
 
-Supplied message should contain the message header - forward-exchange e.g.
+Supplied message should contain the message header - `forward_exchange` e.g.
 
 ```
-forward-exchange {your exchange name}
+forward_exchange {your exchange name}
 ```
 
 The forwarded message will contain the header
